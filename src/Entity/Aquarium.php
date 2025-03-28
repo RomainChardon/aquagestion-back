@@ -12,25 +12,16 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: AquariumRepository::class)]
-// #[ApiResource(operations: [
-//    new Get(
-//        security: "is_granted('ROLE_USER') and object.user == user",
-//        securityMessage: "Désolé, vous n'êtes pas le propriétaire de l'aquarium"
-//    ),
-//    new Put(
-//        securityPostDenormalize: "is_granted('ROLE_ADMIN') or (object.user == user and previous_object.user == user)",
-//        securityPostDenormalizeMessage: "Désolé, seul le propriétaire de l'aquarium peut le modifier"
-//    ),
-//    new Post(
-//        security: "is_granted('ROLE_ADMIN')",
-//        securityMessage: 'Seul les admins peuvent ajouter des aquariums'
-//    )
-//], security: "is_granted('ROLE_USER')")]
-#[ApiResource(security: "is_granted('ROLE_USER')")]
-#[Get(security: "is_granted('ROLE_ADMIN') or object.user == user")]
-#[Put(security: "is_granted('ROLE_ADMIN') or object.user == user")]
-#[Post(security: "is_granted('ROLE_ADMIN')")]
-#[GetCollection]
+#[ApiResource(
+    operations: [
+        new Get(security: "object.user == user or is_granted('ROLE_ADMIN')"),
+        new GetCollection(security: "is_granted('ROLE_ADMIN')"),
+        new Post(validationContext: ['groups' => ['Default', 'aquarium:create']]),
+        new Put(security: "object.user == user or is_granted('ROLE_ADMIN')"),
+    ],
+    normalizationContext: ['groups' => ['aquarium:read']],
+    denormalizationContext: ['groups' => ['aquarium:create', 'aquarium:update']],
+)]
 class Aquarium
 {
     #[ORM\Id]
