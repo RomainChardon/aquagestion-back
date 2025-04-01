@@ -22,8 +22,16 @@ use Symfony\Component\Validator\Constraints as Assert;
     operations: [
         new Get(security: "object == user or is_granted('ROLE_ADMIN')"),
         new GetCollection(security: "is_granted('ROLE_ADMIN')"),
-        new Post(validationContext: ['groups' => ['Default', 'user:create']], processor: UserPasswordHasher::class),
-        new Put(security: "object == user", processor: UserPasswordHasher::class),
+        new Post(
+            validationContext: ['groups' => ['Default', 'user:create']],
+            denormalizationContext: ['groups' => ['user:create']],
+            processor: UserPasswordHasher::class
+        ),
+        new Put(
+            security: "object == user",
+            denormalizationContext: ['groups' => ['user:update']],
+            validationContext: ['groups' => ['user:update']]
+        ),
     ],
     normalizationContext: ['groups' => ['user:read']],
     denormalizationContext: ['groups' => ['user:create', 'user:update']],
@@ -56,7 +64,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $password = null;
 
     #[Assert\NotBlank(groups: ['user:create'])]
-    #[Groups(['user:create', 'user:update'])]
+    #[Groups(['user:create'])]
     private ?string $plainPassword = null;
 
     /**
