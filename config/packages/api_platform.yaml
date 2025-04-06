@@ -1,10 +1,14 @@
 api_platform:
-    title: Hello API Platform
+    title: AquaGestion
     version: 1.0.0
     defaults:
         stateless: true
         cache_headers:
             vary: ['Content-Type', 'Authorization', 'Origin']
+    formats:
+        json: [ 'application/json' ]
+        # tu peux commenter jsonld ou ne pas le définir du tout
+        # jsonld: ['application/ld+json']
     swagger:
         api_keys:
             JWT:
