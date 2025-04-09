@@ -8,7 +8,7 @@ api_platform:
     formats:
         json: [ 'application/json' ]
         # tu peux commenter jsonld ou ne pas le définir du tout
-        # jsonld: ['application/ld+json']
+        jsonld: ['application/ld+json']
     swagger:
         api_keys:
             JWT:

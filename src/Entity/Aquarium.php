@@ -8,7 +8,9 @@ use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
 use App\Repository\AquariumRepository;
+use App\State\AquariumSetUserProcessor;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: AquariumRepository::class)]
@@ -16,7 +18,11 @@ use Symfony\Component\Validator\Constraints as Assert;
     operations: [
         new Get(security: "object.user == user or is_granted('ROLE_ADMIN')"),
         new GetCollection(security: "is_granted('ROLE_ADMIN')"),
-        new Post(validationContext: ['groups' => ['Default', 'aquarium:create']]),
+        new Post(
+            denormalizationContext: ['groups' => ['aquarium:create']],
+            security: "object.user == user and is_granted('ROLE_USER')",
+            validationContext: ['groups' => ['Default', 'aquarium:create']],
+            processor: AquariumSetUserProcessor::class),
         new Put(security: "object.user == user or is_granted('ROLE_ADMIN')"),
     ],
     normalizationContext: ['groups' => ['aquarium:read']],
@@ -27,19 +33,24 @@ class Aquarium
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['aquarium:read'])]
     private ?int $id = null;
 
     /** Name of aquarium */
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank]
+    #[Groups(['aquarium:read', 'aquarium:create', 'aquarium:update'])]
     private ?string $name = null;
 
     /** Aquarium volume */
     #[ORM\Column]
     #[Assert\NotNull]
+    #[Groups(['aquarium:read', 'aquarium:create', 'aquarium:update'])]
     private ?int $liter = null;
 
     #[ORM\ManyToOne(inversedBy: 'aquarium')]
+    #[Groups(['aquarium:read'])]
+    #[Assert\NotNull]
     private ?User $user = null;
 
     public function getId(): ?int
